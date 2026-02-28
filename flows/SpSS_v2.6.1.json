@@ -1,0 +1,1799 @@
+[
+    {
+        "id": "dff6ddc522d802cf",
+        "type": "tab",
+        "label": "SpSS v2.6.0 ",
+        "disabled": false,
+        "info": "10.1.2026 Renamed:\nSmart EV Charger Controller (OTE-CZ Dual Mode) -> Spot price Smart Switch (SpSS)\n\nFetches OTE-CZ prices, finds cheapest slot, sends Victron + Tesla scheduler.",
+        "env": []
+    },
+    {
+        "id": "7b9cd6edacba6294",
+        "type": "group",
+        "z": "dff6ddc522d802cf",
+        "name": "BACKUPS",
+        "style": {
+            "fill": "#d1d1d1",
+            "label": true
+        },
+        "nodes": [
+            "4ba147ab9f806de2",
+            "0edeed0c93d97654",
+            "0d5758d6a78062f3"
+        ],
+        "x": 674,
+        "y": 1059,
+        "w": 852,
+        "h": 159.5
+    },
+    {
+        "id": "6f89cf16d16ed8f4",
+        "type": "comment",
+        "z": "dff6ddc522d802cf",
+        "name": "=== Architecture v2.6.0 ===",
+        "info": "\nNew Architecture (implemented now)\n\n            ┌───────────────────────────┐\n            │  Price Controller v2.6.0  │\n            │  (OTE / ENTSO-E)          │\n            └───────────┬───────────────┘\n                        │\n                price.windows\n                        │\n        ┌───────────────┴───────────────┐\n        │                               │\n┌───────────────┐               ┌───────────────┐\n│ Victron ESS   │               │ Tesla Policy  │\n│ Controller    │               │ Controller    │\n└───────────────┘               └───────────────┘\n",
+        "x": 1020,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "a589cf7f38496c93",
+        "type": "ui_slider",
+        "z": "dff6ddc522d802cf",
+        "name": "Desired SOC",
+        "label": "Desired SOC (%)",
+        "tooltip": "Target State of Charge",
+        "group": "c1b011b476bc3539",
+        "order": 3,
+        "width": 6,
+        "height": 1,
+        "passthru": true,
+        "outs": "end",
+        "topic": "",
+        "topicType": "str",
+        "min": 50,
+        "max": 100,
+        "step": "5",
+        "className": "",
+        "x": 230,
+        "y": 600,
+        "wires": [
+            [
+                "9065ca17c2addd21"
+            ]
+        ]
+    },
+    {
+        "id": "9065ca17c2addd21",
+        "type": "function",
+        "z": "dff6ddc522d802cf",
+        "name": "Save desired SOC to flow",
+        "func": "flow.set('desired_soc', msg.payload);\nreturn msg;",
+        "outputs": 1,
+        "x": 470,
+        "y": 600,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "0063308ac5d6471a",
+        "type": "ui_button",
+        "z": "dff6ddc522d802cf",
+        "name": "Manual Recalculate",
+        "group": "c1b011b476bc3539",
+        "order": 6,
+        "width": "6",
+        "height": 1,
+        "passthru": true,
+        "label": "🔄 Recalculate Now",
+        "tooltip": "",
+        "color": "#ffffff",
+        "bgcolor": "#2e7d32",
+        "className": "",
+        "icon": "refresh",
+        "payload": "",
+        "payloadType": "str",
+        "topic": "",
+        "topicType": "str",
+        "x": 210,
+        "y": 460,
+        "wires": [
+            [
+                "8cb15f1ca5e433d1"
+            ]
+        ]
+    },
+    {
+        "id": "7c685a29c31c768e",
+        "type": "ui_slider",
+        "z": "dff6ddc522d802cf",
+        "name": "Primary Window Hours",
+        "label": "Primary window",
+        "tooltip": "Primary charging window (hours)",
+        "group": "c1b011b476bc3539",
+        "order": 1,
+        "width": 6,
+        "height": 1,
+        "passthru": true,
+        "outs": "end",
+        "topic": "",
+        "topicType": "str",
+        "min": 1,
+        "max": "5",
+        "step": 1,
+        "className": "",
+        "x": 190,
+        "y": 640,
+        "wires": [
+            [
+                "e27e8caf637b6815"
+            ]
+        ]
+    },
+    {
+        "id": "e27e8caf637b6815",
+        "type": "function",
+        "z": "dff6ddc522d802cf",
+        "name": "Save PrimaryWindow to flow",
+        "func": "//flow.set(msg.topic, msg.payload);\n// Save primary window hours\nflow.set('window_hours_primary', Number(msg.payload));\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 480,
+        "y": 640,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "46d8ade1569e9276",
+        "type": "victron-output-ess",
+        "z": "dff6ddc522d802cf",
+        "service": "com.victronenergy.settings",
+        "path": "/Settings/CGwacs/BatteryLife/Schedule/Charge/0/Start",
+        "serviceObj": {
+            "service": "com.victronenergy.settings",
+            "name": "Venus settings"
+        },
+        "pathObj": {
+            "path": "/Settings/CGwacs/BatteryLife/Schedule/Charge/0/Start",
+            "type": "integer",
+            "name": "Schedule 1: Start (seconds after midnight)",
+            "mode": "both"
+        },
+        "name": "",
+        "onlyChanges": false,
+        "outputs": 0,
+        "x": 1840,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "5bab427d448fca5d",
+        "type": "victron-output-ess",
+        "z": "dff6ddc522d802cf",
+        "service": "com.victronenergy.settings",
+        "path": "/Settings/CGwacs/BatteryLife/Schedule/Charge/0/Duration",
+        "serviceObj": {
+            "service": "com.victronenergy.settings",
+            "name": "Venus settings"
+        },
+        "pathObj": {
+            "path": "/Settings/CGwacs/BatteryLife/Schedule/Charge/0/Duration",
+            "type": "integer",
+            "name": "Schedule 1: Duration (seconds)",
+            "mode": "both"
+        },
+        "name": "",
+        "onlyChanges": false,
+        "outputs": 0,
+        "x": 1800,
+        "y": 280,
+        "wires": []
+    },
+    {
+        "id": "c787b4c083dd482b",
+        "type": "victron-output-ess",
+        "z": "dff6ddc522d802cf",
+        "service": "com.victronenergy.settings",
+        "path": "/Settings/CGwacs/BatteryLife/Schedule/Charge/0/Soc",
+        "serviceObj": {
+            "service": "com.victronenergy.settings",
+            "name": "Venus settings"
+        },
+        "pathObj": {
+            "path": "/Settings/CGwacs/BatteryLife/Schedule/Charge/0/Soc",
+            "type": "integer",
+            "name": "Schedule 1: State of charge (%)",
+            "mode": "both"
+        },
+        "name": "",
+        "onlyChanges": false,
+        "outputs": 0,
+        "x": 1800,
+        "y": 320,
+        "wires": []
+    },
+    {
+        "id": "e48a8464a619b024",
+        "type": "change",
+        "z": "dff6ddc522d802cf",
+        "name": "start_minute -> payload",
+        "rules": [
+            {
+                "t": "move",
+                "p": "payload.schedule.start_minute",
+                "pt": "msg",
+                "to": "payload",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "topic",
+                "pt": "msg",
+                "to": "start_minute",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "$number(payload) * 60",
+                "tot": "jsonata"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1410,
+        "y": 240,
+        "wires": [
+            [
+                "48f5187ccc65f7ab",
+                "46d8ade1569e9276"
+            ]
+        ]
+    },
+    {
+        "id": "48f5187ccc65f7ab",
+        "type": "debug",
+        "z": "dff6ddc522d802cf",
+        "name": "debug 2566",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1690,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "c543508f1befb7a8",
+        "type": "debug",
+        "z": "dff6ddc522d802cf",
+        "name": "debug 2567",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1690,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "3e5b45506148efcf",
+        "type": "debug",
+        "z": "dff6ddc522d802cf",
+        "name": "debug 2568",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1690,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "f06dbe70a9f8d0ae",
+        "type": "change",
+        "z": "dff6ddc522d802cf",
+        "name": "duration_minute -> payload",
+        "rules": [
+            {
+                "t": "move",
+                "p": "payload.schedule.duration_minute",
+                "pt": "msg",
+                "to": "payload",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "topic",
+                "pt": "msg",
+                "to": "duration_minute",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "$number(payload) * 60",
+                "tot": "jsonata"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1420,
+        "y": 280,
+        "wires": [
+            [
+                "c543508f1befb7a8",
+                "5bab427d448fca5d"
+            ]
+        ]
+    },
+    {
+        "id": "c845d87ea0145b7c",
+        "type": "change",
+        "z": "dff6ddc522d802cf",
+        "name": "soc_setpoint -> payload",
+        "rules": [
+            {
+                "t": "move",
+                "p": "payload.schedule.soc_setpoint",
+                "pt": "msg",
+                "to": "payload",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "topic",
+                "pt": "msg",
+                "to": "soc_setpoint",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1410,
+        "y": 320,
+        "wires": [
+            [
+                "3e5b45506148efcf",
+                "c787b4c083dd482b"
+            ]
+        ]
+    },
+    {
+        "id": "e66ab71aa8c9778e",
+        "type": "function",
+        "z": "dff6ddc522d802cf",
+        "name": "Config URL & Data Source Switch",
+        "func": "\n// URLs backup\n// https://web-api.tp.entsoe.eu/api?securityToken=e4baba30-180b-40dc-9de2-f9ec67498d24&documentType=A44&in_Domain=10YCZ-CEPS-----N&out_Domain=10YCZ-CEPS-----N&periodStart=202601060000&periodEnd=202601062300\n// https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml\n// OLD https://www.ote-cr.cz/en/short-term-markets/electricity/day-ahead-market/@@chart-data?report_date={{$moment().format('YYYY-MM-DD')}}&time_resolution=PT15M\n\n\nflow.set('entsoe_token', 'e4baba30-180b-40dc-9de2-f9ec67498d24');\n\n// *** Data Source Switch ***\n//flow.set('price_data_source', 'ENTSOE_A44'); // default\nflow.set('price_data_source', 'OTE_CHART');  // rnovacek-compatible\n\nreturn null;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 500,
+        "y": 120,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "2ca9bb5748dc9ca3",
+        "type": "inject",
+        "z": "dff6ddc522d802cf",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "10",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 230,
+        "y": 120,
+        "wires": [
+            [
+                "e66ab71aa8c9778e"
+            ]
+        ]
+    },
+    {
+        "id": "e1eedb84618b3c65",
+        "type": "function",
+        "z": "dff6ddc522d802cf",
+        "name": "Build ENTSO-E URL (D+1 → D)",
+        "func": "/**\n * Build ENTSO-E A44 URL\n * - Initial logic: D+1 after 13:00, else D\n * - FIX: downgrade to D on first retry\n */\n\nfunction formatDate(d) {\n  const yyyy = d.getFullYear();\n  const mm = String(d.getMonth() + 1).padStart(2, '0');\n  const dd = String(d.getDate()).padStart(2, '0');\n  return `${yyyy}${mm}${dd}`;\n}\n\nconst token = flow.get('entsoe_token');\nif (!token) throw new Error('ENTSOE_TOKEN_MISSING');\n\nconst now = new Date();\nconst hour = now.getHours();\n\n// Initialize retry state ONCE\nmsg._retries = msg._retries ?? 0;\n\nif (!msg._retryMode) {\n  msg._retryMode = hour >= 13 ? 'D+1' : 'D';\n}\n\n// Initial mode\nif (!msg._retryMode) {\n  msg._retryMode = hour >= 13 ? 'D+1' : 'D';\n}\n\n// !! FIX: downgrade after first failure\nif (msg._retries >= 1 && msg._retryMode === 'D+1') {\n  msg._retryMode = 'D';\n}\n\nconst date = new Date();\nif (msg._retryMode === 'D+1') {\n  date.setDate(date.getDate() + 1);\n}\n\nconst dateStr = formatDate(date);\n\nmsg.price_source = 'ENTSOE_A44';\nmsg.delivery_day = dateStr;\n\nmsg.url =\n  `https://web-api.tp.entsoe.eu/api` +\n  `?securityToken=${token}` +\n  `&documentType=A44` +\n  `&in_Domain=10YCZ-CEPS-----N` +\n  `&out_Domain=10YCZ-CEPS-----N` +\n  `&periodStart=${dateStr}0000` +\n  `&periodEnd=${dateStr}2300`;\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 510,
+        "y": 180,
+        "wires": [
+            [
+                "ae49f642c397b3ba"
+            ]
+        ]
+    },
+    {
+        "id": "ae49f642c397b3ba",
+        "type": "http request",
+        "z": "dff6ddc522d802cf",
+        "name": "ENTSO-E API",
+        "method": "GET",
+        "ret": "txt",
+        "url": "",
+        "x": 760,
+        "y": 180,
+        "wires": [
+            [
+                "e757c5a57c22583f",
+                "fdbd1b51c6d935a8"
+            ]
+        ]
+    },
+    {
+        "id": "e757c5a57c22583f",
+        "type": "function",
+        "z": "dff6ddc522d802cf",
+        "name": "ENTSO-E Retry + Backoff",
+        "func": "/**\n * ENTSO-E Retry + Backoff\n * - Handles HTTP errors\n * - Handles empty / invalid XML\n * - Downgrades D+1 → D on first retry\n */\n\nconst sc = msg.statusCode;\n\n// detect empty or invalid ENTSO-E payload\nconst isEmptyEntsoe =\n  sc === 200 &&\n  (\n    typeof msg.payload !== 'string' ||\n    !msg.payload.includes('<Publication_MarketDocument')\n  );\n\n// retry conditions\nif (sc === 429 || sc >= 500 || isEmptyEntsoe) {\n  msg._retries = (msg._retries ?? 0) + 1;\n\n  // downgrade D+1 → D on first retry\n  if (msg._retries >= 1 && msg._retryMode === 'D+1') {\n    msg._retryMode = 'D';\n  }\n\n  if (msg._retries > 3) {\n    node.warn('ENTSO-E retry limit exceeded');\n    return [null, msg]; // let controller fallback\n  }\n\n  const delay = 1000 * Math.pow(2, msg._retries);\n  node.warn(\n    isEmptyEntsoe\n      ? 'ENTSO-E empty response → retry'\n      : `ENTSO-E retry ${msg._retries}, backoff ${delay}ms`\n  );\n\n  // LOOP BACK\n  return [msg, null];\n}\n\n// success path\nreturn [null, msg];",
+        "outputs": 2,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 530,
+        "y": 240,
+        "wires": [
+            [
+                "e1eedb84618b3c65"
+            ],
+            [
+                "63fe61ab3e4cd235"
+            ]
+        ]
+    },
+    {
+        "id": "63fe61ab3e4cd235",
+        "type": "xml",
+        "z": "dff6ddc522d802cf",
+        "name": "Parse XML",
+        "property": "payload",
+        "attr": "",
+        "chr": "",
+        "x": 750,
+        "y": 240,
+        "wires": [
+            [
+                "25a89d746027af2e",
+                "f958aeef9671f202"
+            ]
+        ]
+    },
+    {
+        "id": "1755b177144947fb",
+        "type": "debug",
+        "z": "dff6ddc522d802cf",
+        "name": "output_#1_Victron1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1390,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "505bc5cec00e7e45",
+        "type": "ui_template",
+        "z": "dff6ddc522d802cf",
+        "group": "f361919ab48c7d95",
+        "name": "CZ SP Controller Status v2.6.1",
+        "order": 1,
+        "width": 6,
+        "height": 8,
+        "format": "<div\n  style=\"font-family: sans-serif; padding: 10px; border-left: 6px solid;\"\n  ng-style=\"{'border-color': msg.payload.ok ? '#2ecc71' : '#e74c3c'}\"\n>\n\n  <h3 style=\"margin-top: 0;\">\n    CZ Spot Price Controller\n    <span style=\"font-size: 0.8em; color: #666;\">\n      {{msg.payload.version}}\n    </span>\n  </h3>\n\n  <p>\n    <strong>Status:</strong>\n    <span ng-if=\"msg.payload.ok\" style=\"color:#2ecc71;\">OK</span>\n    <span ng-if=\"!msg.payload.ok\" style=\"color:#e74c3c;\">FALLBACK</span>\n  </p>\n\n  <p>\n    <strong>Source:</strong>\n    {{msg.payload.source}}\n  </p>\n\n  <p>\n    <strong>Delivery day:</strong>\n    <span style=\"font-size: 1.0em\">\n      {{msg.payload.delivery_day}}\n    </span>\n  </p>\n\n  <hr>\n\n  <!-- ================= PRIMARY WINDOW ================= -->\n\n  <h4>Primary charging window</h4>\n\n  <table style=\"border-collapse: collapse;\">\n    <tr>\n      <td style=\"padding: 4px 10px;\"><strong>Start</strong></td>\n      <td>{{msg.payload.selected.primary.start}}:00</td>\n    </tr>\n    <tr>\n      <td style=\"padding: 4px 10px;\"><strong>End</strong></td>\n      <td>{{msg.payload.selected.primary.end}}:00</td>\n    </tr>\n    <tr>\n      <td style=\"padding: 4px 10px;\"><strong>Length</strong></td>\n      <td>{{msg.payload.selected.primary.hours}} h</td>\n    </tr>\n    <tr>\n      <td style=\"padding: 4px 10px;\"><strong>Avg price</strong></td>\n      <td>\n        {{msg.payload.selected.primary.avg}}\n        EUR/MWh\n      </td>\n    </tr>\n  </table>\n\n  <!-- ================= SECONDARY WINDOW ================= -->\n\n  <div ng-if=\"msg.payload.selected.secondary\">\n    <hr>\n\n    <h4>Secondary charging window</h4>\n\n    <table style=\"border-collapse: collapse;\">\n      <tr>\n        <td style=\"padding: 4px 10px;\"><strong>Start</strong></td>\n        <td>{{msg.payload.selected.secondary.start}}:00</td>\n      </tr>\n      <tr>\n        <td style=\"padding: 4px 10px;\"><strong>End</strong></td>\n        <td>{{msg.payload.selected.secondary.end}}:00</td>\n      </tr>\n      <tr>\n        <td style=\"padding: 4px 10px;\"><strong>Length</strong></td>\n        <td>{{msg.payload.selected.secondary.hours}} h</td>\n      </tr>\n      <tr>\n        <td style=\"padding: 4px 10px;\"><strong>Avg price</strong></td>\n        <td>\n          {{msg.payload.selected.secondary.avg}}\n          EUR/MWh\n        </td>\n      </tr>\n    </table>\n  </div>\n\n  <!-- ================= NO SECONDARY ================= -->\n\n  <div ng-if=\"!msg.payload.selected.secondary\">\n    <hr>\n    <em style=\"color:#777;\">\n      No suitable secondary charging window found\n    </em>\n  </div>\n\n</div>",
+        "storeOutMessages": false,
+        "fwdInMessages": false,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 1410,
+        "y": 660,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "f3d4569c9742af56",
+        "type": "xml",
+        "z": "dff6ddc522d802cf",
+        "name": "Parse XML",
+        "property": "payload",
+        "attr": "",
+        "chr": "",
+        "x": 610,
+        "y": 780,
+        "wires": [
+            [
+                "e64bc237e90803fa"
+            ]
+        ]
+    },
+    {
+        "id": "e64bc237e90803fa",
+        "type": "function",
+        "z": "dff6ddc522d802cf",
+        "name": "ECB FX parser v1.1",
+        "func": "/**\n * ECB EUR/CZK FX parser (Node-RED XML safe)\n * - Handles namespaces\n * - Caches value in flow context\n * \n * v1.1:\n * - added: Ensure the controller does not silently use stale FX rates.\n * Design:\n *  FX parser:\n *  - stores date\n *  - stores stale: true|false\n *  Controller:\n *  - reads FX metadata\n *  - exposes fx.stale + fx.age_days\n */\n\nconst rootKey = Object.keys(msg.payload || {})[0];\nif (!rootKey) {\n  node.warn('ECB_FX_NO_ROOT');\n  return null;\n}\n\nconst envelope = msg.payload[rootKey];\n\n// Navigate: Envelope → Cube → Cube(time) → Cube(currency)\nconst cubesLevel1 = envelope.Cube?.[0]?.Cube?.[0]?.Cube;\nif (!Array.isArray(cubesLevel1)) {\n  node.warn('ECB_FX_INVALID_XML');\n  return null;\n}\n\nconst czk = cubesLevel1.find(c => c.$?.currency === 'CZK');\nif (!czk) {\n  node.warn('ECB_FX_CZK_NOT_FOUND');\n  return null;\n}\n\nconst rate = Number(czk.$.rate);\nif (!Number.isFinite(rate)) {\n  node.warn('ECB_FX_INVALID_RATE');\n  return null;\n}\n\n// ---\nconst fxDateStr = envelope.Cube?.[0]?.Cube?.[0]?.$?.time;\nif (!fxDateStr) {\n  node.warn('ECB_FX_NO_DATE');\n  return null;\n}\n\nconst fxDate = new Date(fxDateStr);\nconst today = new Date();\nconst ageDays = Math.floor(\n  (today.setHours(0,0,0,0) - fxDate.setHours(0,0,0,0)) / 86400000\n);\n\nconst MAX_FX_AGE_DAYS = Number(flow.get('fx_max_age_days') ?? 2);\nconst stale = ageDays > MAX_FX_AGE_DAYS;\n\nflow.set('fx', {\n  czk_per_eur: rate,\n  date: fxDateStr,\n  age_days: ageDays,\n  stale,\n  source: 'ECB'\n});\n\nnode.status({\n  fill: stale ? 'yellow' : 'green',\n  shape: 'dot',\n  text: stale\n    ? `EUR/CZK ${rate} (STALE ${ageDays}d)`\n    : `EUR/CZK ${rate}`\n});\n\nreturn null;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 790,
+        "y": 780,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "5445e5624b43d2d7",
+        "type": "inject",
+        "z": "dff6ddc522d802cf",
+        "name": "Daily 13:50",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "50 13 * * *",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 230,
+        "y": 780,
+        "wires": [
+            [
+                "39b1c67e39f79684"
+            ]
+        ]
+    },
+    {
+        "id": "33f90695a6e5f016",
+        "type": "inject",
+        "z": "dff6ddc522d802cf",
+        "name": "Daily 22:50 OTE fetch",
+        "props": [],
+        "repeat": "",
+        "crontab": "50 22 * * *",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 200,
+        "y": 300,
+        "wires": [
+            [
+                "8cb15f1ca5e433d1"
+            ]
+        ]
+    },
+    {
+        "id": "8cb15f1ca5e433d1",
+        "type": "function",
+        "z": "dff6ddc522d802cf",
+        "name": "Build OTE URL (D+1 → D)",
+        "func": "/**\n * Build OTE @@chart-data URL\n * - Initial attempt: D+1\n * - FIX: downgrade to D on first retry\n */\n\nfunction formatDate(d) {\n  const yyyy = d.getFullYear();\n  const mm = String(d.getMonth() + 1).padStart(2, '0');\n  const dd = String(d.getDate()).padStart(2, '0');\n  return `${yyyy}-${mm}-${dd}`;\n}\n\n// Initialize retry state\nmsg._retries = msg._retries ?? 0;\n\n// Initial mode\nif (!msg._retryMode) {\n  msg._retryMode = 'D+1';\n}\n\n//!! FIX: downgrade after first failure\nif (msg._retries >= 1 && msg._retryMode === 'D+1') {\n  msg._retryMode = 'D';\n}\n\nconst date = new Date();\nif (msg._retryMode === 'D+1') {\n  date.setDate(date.getDate() + 1);\n}\n\nconst dateStr = formatDate(date);\n\nmsg.price_source = 'OTE_CHART';\nmsg.delivery_day = dateStr;\n\nmsg.url =\n  `https://www.ote-cr.cz/en/short-term-markets/electricity/day-ahead-market/@@chart-data` +\n  `?report_date=${dateStr}` +\n  `&time_resolution=PT15M`;\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 530,
+        "y": 300,
+        "wires": [
+            [
+                "36534e6dddc06245"
+            ]
+        ]
+    },
+    {
+        "id": "0fbfc0c7b86b5769",
+        "type": "function",
+        "z": "dff6ddc522d802cf",
+        "name": "OTE Retry + Backoff",
+        "func": "\nconst sc = msg.statusCode;\n\nconst isEmptyOte =\n  msg.price_source === 'OTE_CHART' &&\n  sc === 200 &&\n  Array.isArray(msg.payload?.data?.dataLine) &&\n  msg.payload.data.dataLine.length === 0;\n\n// retry conditions\nif (isEmptyOte || sc === 429 || sc >= 500) {\n  msg._retries = (msg._retries ?? 0) + 1;\n\n  // downgrade D+1 → D on first retry\n  if (msg._retries >= 1 && msg._retryMode === 'D+1') {\n    msg._retryMode = 'D';\n  }\n\n  if (msg._retries > 2) {\n    node.warn('OTE retry limit exceeded');\n    return [null, msg]; // let controller handle fallback\n  }\n\n  node.warn(\n    isEmptyOte\n      ? 'OTE D+1 empty → retry with D'\n      : `OTE retry ${msg._retries}`\n  );\n\n  // ⬅️ LOOP BACK\n  return [msg, null];\n}\n\n// success path\nreturn [null, msg];",
+        "outputs": 2,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 540,
+        "y": 360,
+        "wires": [
+            [
+                "8cb15f1ca5e433d1"
+            ],
+            [
+                "25a89d746027af2e"
+            ]
+        ]
+    },
+    {
+        "id": "8b15ac9621093073",
+        "type": "ui_slider",
+        "z": "dff6ddc522d802cf",
+        "name": "Window Start Min",
+        "label": "Charging start ≥ hour",
+        "tooltip": "Earliest allowed start hour (0–23)",
+        "group": "c1b011b476bc3539",
+        "order": 4,
+        "width": 6,
+        "height": 1,
+        "passthru": true,
+        "outs": "end",
+        "topic": "",
+        "topicType": "str",
+        "min": 0,
+        "max": 23,
+        "step": 1,
+        "className": "",
+        "x": 210,
+        "y": 520,
+        "wires": [
+            [
+                "d97f35202e02bd4f"
+            ]
+        ]
+    },
+    {
+        "id": "d97f35202e02bd4f",
+        "type": "function",
+        "z": "dff6ddc522d802cf",
+        "name": "Save window_start_min",
+        "func": "flow.set('window_start_min', Number(msg.payload));\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 470,
+        "y": 520,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "839e94644b3f73ac",
+        "type": "ui_slider",
+        "z": "dff6ddc522d802cf",
+        "name": "Window Stop Max",
+        "label": "Charging stop ≤ hour",
+        "tooltip": "Latest allowed stop hour (0–23)",
+        "group": "c1b011b476bc3539",
+        "order": 5,
+        "width": 6,
+        "height": 1,
+        "passthru": true,
+        "outs": "end",
+        "topic": "",
+        "topicType": "str",
+        "min": 0,
+        "max": 23,
+        "step": 1,
+        "className": "",
+        "x": 210,
+        "y": 560,
+        "wires": [
+            [
+                "2d65589668058612"
+            ]
+        ]
+    },
+    {
+        "id": "2d65589668058612",
+        "type": "function",
+        "z": "dff6ddc522d802cf",
+        "name": "Save window_start_max",
+        "func": "flow.set('window_start_max', Number(msg.payload));\nreturn msg;",
+        "outputs": 1,
+        "x": 470,
+        "y": 560,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "874fc4f61b2528d8",
+        "type": "ui_chart",
+        "z": "dff6ddc522d802cf",
+        "name": "",
+        "group": "f361919ab48c7d95",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "label": "Spot prices (CZ)",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "auto",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": true,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": "1",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "86400",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#98df8a",
+            "#ff7f0e",
+            "#caf0fe",
+            "#669c35",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 1360,
+        "y": 700,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "3ab065c7be8793b2",
+        "type": "debug",
+        "z": "dff6ddc522d802cf",
+        "name": "output_#6_DEBUG ",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1370,
+        "y": 740,
+        "wires": []
+    },
+    {
+        "id": "3c388a0a3df13538",
+        "type": "function",
+        "z": "dff6ddc522d802cf",
+        "name": "debug_controller",
+        "func": "\n//let debug_controller; \n\nflow.set('debug_controller', msg.payload);\n\nif (flow.get('debug_controller')) {\n    node.status({ fill: \"red\", shape: \"ring\", text: \"Debugging ON\" });\n} else {\n    node.status({ fill: \"green\", shape: \"ring\", text: \"Debugging OFF\" });\n    \n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 950,
+        "y": 580,
+        "wires": [
+            [
+                "37c18e0c4eab7db3"
+            ]
+        ]
+    },
+    {
+        "id": "2ca0b73c2fb7b3e4",
+        "type": "inject",
+        "z": "dff6ddc522d802cf",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "true",
+        "payloadType": "bool",
+        "x": 770,
+        "y": 580,
+        "wires": [
+            [
+                "3c388a0a3df13538"
+            ]
+        ]
+    },
+    {
+        "id": "cb329cc8cfab703d",
+        "type": "inject",
+        "z": "dff6ddc522d802cf",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "false",
+        "payloadType": "bool",
+        "x": 770,
+        "y": 620,
+        "wires": [
+            [
+                "3c388a0a3df13538"
+            ]
+        ]
+    },
+    {
+        "id": "37c18e0c4eab7db3",
+        "type": "debug",
+        "z": "dff6ddc522d802cf",
+        "name": "debug 2569",
+        "active": true,
+        "tosidebar": false,
+        "console": false,
+        "tostatus": true,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "payload",
+        "statusType": "auto",
+        "x": 1130,
+        "y": 580,
+        "wires": []
+    },
+    {
+        "id": "a98fa69ee8b917ff",
+        "type": "function",
+        "z": "dff6ddc522d802cf",
+        "name": "Clear ALL price caches!",
+        "func": "\nconst cleared = flow.keys()\n  .filter(k => k.startsWith('prices_'));\n\ncleared.forEach(k => flow.set(k, null));\n\nnode.status({\n  fill: 'green',\n  shape: 'dot',\n  text: `Cleared ${cleared.length} cache keys`\n});\n\nreturn {\n  topic: 'cache.clear',\n  payload: cleared\n};",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 970,
+        "y": 520,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "94df286b1f39c1de",
+        "type": "inject",
+        "z": "dff6ddc522d802cf",
+        "name": "Run___",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 770,
+        "y": 520,
+        "wires": [
+            [
+                "a98fa69ee8b917ff"
+            ]
+        ]
+    },
+    {
+        "id": "cf76cc020c1286db",
+        "type": "debug",
+        "z": "dff6ddc522d802cf",
+        "d": true,
+        "name": "http_Req_Node__DEBUG",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1010,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "01eff4d1d980a1a4",
+        "type": "victron-output-ess",
+        "z": "dff6ddc522d802cf",
+        "service": "com.victronenergy.settings",
+        "path": "/Settings/CGwacs/BatteryLife/Schedule/Charge/1/Start",
+        "serviceObj": {
+            "service": "com.victronenergy.settings",
+            "name": "Venus settings"
+        },
+        "pathObj": {
+            "path": "/Settings/CGwacs/BatteryLife/Schedule/Charge/1/Start",
+            "type": "integer",
+            "name": "Schedule 2: Start (seconds after midnight)",
+            "mode": "both"
+        },
+        "name": "",
+        "onlyChanges": false,
+        "outputs": 0,
+        "x": 1840,
+        "y": 400,
+        "wires": []
+    },
+    {
+        "id": "548734c77d6955fe",
+        "type": "victron-output-ess",
+        "z": "dff6ddc522d802cf",
+        "service": "com.victronenergy.settings",
+        "path": "/Settings/CGwacs/BatteryLife/Schedule/Charge/1/Duration",
+        "serviceObj": {
+            "service": "com.victronenergy.settings",
+            "name": "Venus settings"
+        },
+        "pathObj": {
+            "path": "/Settings/CGwacs/BatteryLife/Schedule/Charge/1/Duration",
+            "type": "integer",
+            "name": "Schedule 2: Duration (seconds)",
+            "mode": "both"
+        },
+        "name": "",
+        "onlyChanges": false,
+        "outputs": 0,
+        "x": 1800,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "aefc572eafcad5de",
+        "type": "victron-output-ess",
+        "z": "dff6ddc522d802cf",
+        "service": "com.victronenergy.settings",
+        "path": "/Settings/CGwacs/BatteryLife/Schedule/Charge/1/Soc",
+        "serviceObj": {
+            "service": "com.victronenergy.settings",
+            "name": "Venus settings"
+        },
+        "pathObj": {
+            "path": "/Settings/CGwacs/BatteryLife/Schedule/Charge/1/Soc",
+            "type": "integer",
+            "name": "Schedule 2: State of charge (%)",
+            "mode": "both"
+        },
+        "name": "",
+        "onlyChanges": false,
+        "outputs": 0,
+        "x": 1800,
+        "y": 480,
+        "wires": []
+    },
+    {
+        "id": "2f15096eee2c1795",
+        "type": "debug",
+        "z": "dff6ddc522d802cf",
+        "name": "output_#4_Status",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1370,
+        "y": 620,
+        "wires": []
+    },
+    {
+        "id": "e370e0e39568dcb4",
+        "type": "debug",
+        "z": "dff6ddc522d802cf",
+        "name": "output_#3_priceWindow",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1410,
+        "y": 540,
+        "wires": []
+    },
+    {
+        "id": "974804d7208f909d",
+        "type": "debug",
+        "z": "dff6ddc522d802cf",
+        "d": true,
+        "name": "debug: ECB http query status",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 670,
+        "y": 840,
+        "wires": []
+    },
+    {
+        "id": "25a89d746027af2e",
+        "type": "function",
+        "z": "dff6ddc522d802cf",
+        "name": "CZ Spot Price Controller v2.6.1",
+        "func": "/**\n * CZ Spot Price Controller\n * v2.6.0\n *\n * MAJOR:\n * - Device-agnostic price intelligence\n * - Primary + secondary charging windows\n * - price.windows canonical output\n * - Tesla logic fully removed\n * \n * v2.6.1\n * - splitted \"Window Charging Hours\" -> Primaty/Secondary Charging Hours\n */\n\n// ======================================================\n// VERSION\n// ======================================================\nconst VERSION = '2.6.1';\n\n// ======================================================\n// DEBUG\n// ======================================================\nconst DEBUG = flow.get('debug_controller') === true;\n\nfunction debug(msg) {\n  if (!DEBUG) return null;\n  return { topic: 'DEBUG', payload: msg };\n}\n\n// ======================================================\n// CONFIG\n// ======================================================\nconst CFG = {\n  source: flow.get('price_data_source') ?? 'ENTSOE_A44',\n  windowHoursPrimary: Number(flow.get('window_hours_primary') ?? 4),\n  windowHoursSecondary: Number(flow.get('window_hours_secondary') ?? 2),\n  desiredSoc: Number(flow.get('desired_soc') ?? 70),\n  maxAvgPrice: Number(flow.get('max_avg_price_eur_mwh') ?? 150)\n};\n\n// ======================================================\n// SOURCE VALIDATION\n// ======================================================\nif (CFG.source === 'OTE_CHART') {\n  if (!msg.payload?.data?.dataLine) throw 'PAYLOAD_SOURCE_MISMATCH_OTE';\n  if (Array.isArray(msg.payload.data.dataLine) &&\n      msg.payload.data.dataLine.length === 0)\n    throw 'OTE_EMPTY_DATASET';\n}\n\nif (CFG.source === 'ENTSOE_A44' && !msg.payload?.TimeSeries)\n  throw 'PAYLOAD_SOURCE_MISMATCH_ENTSOE';\n\nif (msg.price_source !== CFG.source)\n  throw `SOURCE_SWITCH_MISMATCH ${msg.price_source} → ${CFG.source}`;\n\n// ======================================================\n// TIME HELPERS\n// ======================================================\nfunction toLocalIso(date) {\n  const tz = -date.getTimezoneOffset();\n  const s = tz >= 0 ? '+' : '-';\n  const p = n => String(Math.abs(n)).padStart(2, '0');\n  return date.toISOString().replace('Z', `${s}${p(tz/60)}:${p(tz%60)}`);\n}\n\n// ======================================================\n// FALLBACK (Victron only)\n// ======================================================\nfunction buildFallback(reason) {\n  const h = Number(flow.get('fallback_start_hour') ?? 1);\n  const w = Number(flow.get('fallback_window_hours') ?? 2);\n  const soc = Number(flow.get('fallback_soc') ?? 80);\n\n  return [\n    {\n      topic: 'victron.schedule',\n      payload: {\n        action: 'set_scheduler',\n        schedule: {\n          index: 0,\n          enabled: true,\n          day: 7,\n          start_minute: h * 60,\n          duration_minute: w * 60,\n          soc_setpoint: soc,\n          note: 'FALLBACK'\n        }\n      }\n    },\n    null,\n    null,\n    {\n      topic: 'controller.status',\n      payload: { ok: false, fallback: true, reason, version: VERSION }\n    },\n    null,\n    null,\n    debug({ fallback: true, reason })\n  ];\n}\n\n// ======================================================\n// PARSERS\n// ======================================================\nfunction parseEntsoeA44(doc) {\n  const root = doc?.[Object.keys(doc)[0]];\n  const pts = root?.TimeSeries?.[0]?.Period?.[0]?.Point;\n  if (!Array.isArray(pts)) throw 'A44_NO_POINTS';\n\n  return pts.map(p => ({\n    hour: Number(p.position[0]) - 1,\n    price: Number(p['price.amount'][0])\n  }));\n}\n\nfunction parseOteChart(doc) {\n  const lines = doc?.data?.dataLine;\n  if (!Array.isArray(lines)) throw 'OTE_NO_DATALINE';\n\n  const line = lines.find(l =>\n    l.title === '60min price reference (EUR/MWh)'\n  );\n  if (!line?.point || line.point.length !== 96)\n    throw 'OTE_INVALID_POINTS';\n\n  const out = [];\n  for (let h = 0; h < 24; h++) {\n    const p = Number(line.point[h * 4].y);\n    if (!Number.isFinite(p)) throw 'OTE_PRICE_INVALID';\n    out.push({ hour: h, price: p });\n  }\n  return out;\n}\n\n// ======================================================\n// WINDOW FINDER\n// ======================================================\nfunction findCheapestWindowInRange(hourly, startMin, startMax, windowHours) {\n  let best = null;\n\n  for (let start = startMin; start <= startMax; start++) {\n    const end = start + windowHours;\n    if (end > 24) continue;\n\n    const slice = hourly.filter(\n      h => h.hour >= start && h.hour < end\n    );\n\n    if (slice.length !== windowHours) continue;\n\n    const avg = slice.reduce((a,b)=>a+b.price,0) / slice.length;\n    const max = Math.max(...slice.map(h=>h.price));\n\n    if (!best || avg < best.avg) {\n      best = { start, end, avg, max };\n    }\n  }\n\n  return best;\n}\n\n// ======================================================\n// CACHE\n// ======================================================\nconst CACHE_VERSION = 'v2_6_0';\nconst sig = CFG.source === 'OTE_CHART' ? 'ote' : 'entsoe';\nconst cacheKey = `prices_${sig}_${msg.delivery_day}_${CACHE_VERSION}`;\n\nlet hourly = flow.get(cacheKey);\nif (!hourly) {\n  try {\n    hourly = CFG.source === 'OTE_CHART'\n      ? parseOteChart(msg.payload)\n      : parseEntsoeA44(msg.payload);\n    flow.set(cacheKey, hourly);\n  } catch (e) {\n    return buildFallback(e);\n  }\n}\n\n// ======================================================\n// MAIN LOGIC\n// ======================================================\nconst winPrimary = findCheapestWindowInRange(\n  hourly,\n  0,\n  23 - CFG.windowHoursPrimary,\n  CFG.windowHoursPrimary\n);\n\nif (!winPrimary) throw 'NO_PRIMARY_WINDOW';\n\nconst winSecondary = findCheapestWindowInRange(\n  hourly,\n  10,\n  17,\n  CFG.windowHoursSecondary\n);\n\nif (winPrimary.avg > CFG.maxAvgPrice)\n  return buildFallback('PRICE_TOO_HIGH');\n\n// ======================================================\n// OUTPUTS\n// ======================================================\nconst victronSchedule1Msg = {\n  topic:'victron.schedule',\n  payload:{ action:'set_scheduler', schedule:{\n    enabled:true,\n    day:7,\n    start_minute: winPrimary.start * 60,\n    duration_minute: CFG.windowHoursPrimary * 60,\n    soc_setpoint: CFG.desiredSoc\n  }}\n};\n\nconst victronSchedule2Msg = winSecondary ? {\n  topic:'victron.schedule',\n  payload:{ action:'set_scheduler', schedule:{\n    enabled:true,\n    day:7,\n    start_minute: winSecondary.start * 60,\n    duration_minute: CFG.windowHoursSecondary * 60,\n    soc_setpoint: CFG.desiredSoc\n  }}\n} : null;\n\nconst priceWindows = {\n  topic:'price.windows',\n  payload:{\n    version: VERSION,\n    source: CFG.source,\n    delivery_day: msg.delivery_day,\n    windows:{\n      primary:{\n        start: winPrimary.start,\n        end: winPrimary.end,\n        avg: +winPrimary.avg.toFixed(2),\n        max: +winPrimary.max.toFixed(2)\n      },\n      secondary: winSecondary && {\n        start: winSecondary.start,\n        end: winSecondary.end,\n        avg: +winSecondary.avg.toFixed(2),\n        max: +winSecondary.max.toFixed(2)\n      }\n    }\n  }\n};\n\nconst controllerStatusMsg = {\n  topic:'controller.status',\n  payload:{\n    ok:true,\n    version: VERSION,\n    source: CFG.source,\n    delivery_day: msg.delivery_day,\n    selected:{\n      primary:{\n        start: winPrimary.start,\n        end: winPrimary.end,\n        hours: CFG.windowHoursPrimary,\n        avg: +winPrimary.avg.toFixed(2)\n      },\n      secondary: winSecondary ? {\n        start: winSecondary.start,\n        end: winSecondary.end,\n        hours: CFG.windowHoursSecondary,\n        avg: +winSecondary.avg.toFixed(2)\n      } : null\n    }\n  }\n};\n\nconst chartMsgs = [];\nconst [y,m,d] = msg.delivery_day.split('-').map(Number);\nconst base = new Date(y,m-1,d).getTime();\n\nhourly.forEach(h => {\n  const ts = base + h.hour * 3600000;\n  chartMsgs.push({ topic:'EUR/MWh', payload:h.price, timestamp:ts });\n  chartMsgs.push({\n    topic:'Primary window',\n    payload: h.hour>=winPrimary.start && h.hour<winPrimary.end ? h.price : null,\n    timestamp:ts\n  });\n  chartMsgs.push({\n    topic:'Secondary window',\n    payload: winSecondary &&\n      h.hour>=winSecondary.start && h.hour<winSecondary.end\n        ? h.price : null,\n    timestamp:ts\n  });\n});\n\nreturn [\n  victronSchedule1Msg,\n  victronSchedule2Msg,\n  priceWindows,\n  controllerStatusMsg,\n  chartMsgs,\n  null,\n  debug({\n    version:VERSION,\n    primary: winPrimary,\n    secondary: winSecondary\n  })\n];",
+        "outputs": 7,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1030,
+        "y": 400,
+        "wires": [
+            [
+                "e48a8464a619b024",
+                "f06dbe70a9f8d0ae",
+                "c845d87ea0145b7c",
+                "1755b177144947fb"
+            ],
+            [
+                "4be6c67b081bd9e8",
+                "67b703ea5519e5e4",
+                "b3fedba704042156",
+                "9ac03198c45c3f30"
+            ],
+            [
+                "e370e0e39568dcb4",
+                "1fe9e445621e0059"
+            ],
+            [
+                "2f15096eee2c1795",
+                "505bc5cec00e7e45"
+            ],
+            [
+                "874fc4f61b2528d8"
+            ],
+            [],
+            [
+                "3ab065c7be8793b2"
+            ]
+        ]
+    },
+    {
+        "id": "4be6c67b081bd9e8",
+        "type": "change",
+        "z": "dff6ddc522d802cf",
+        "name": "start_minute -> payload",
+        "rules": [
+            {
+                "t": "move",
+                "p": "payload.schedule.start_minute",
+                "pt": "msg",
+                "to": "payload",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "topic",
+                "pt": "msg",
+                "to": "start_minute",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "$number(payload) * 60",
+                "tot": "jsonata"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1410,
+        "y": 400,
+        "wires": [
+            [
+                "01eff4d1d980a1a4",
+                "d3845b6025fc4f09"
+            ]
+        ]
+    },
+    {
+        "id": "67b703ea5519e5e4",
+        "type": "change",
+        "z": "dff6ddc522d802cf",
+        "name": "duration_minute -> payload",
+        "rules": [
+            {
+                "t": "move",
+                "p": "payload.schedule.duration_minute",
+                "pt": "msg",
+                "to": "payload",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "topic",
+                "pt": "msg",
+                "to": "duration_minute",
+                "tot": "str"
+            },
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "$number(payload) * 60",
+                "tot": "jsonata"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1420,
+        "y": 440,
+        "wires": [
+            [
+                "548734c77d6955fe",
+                "e0f878e7a790c9d0"
+            ]
+        ]
+    },
+    {
+        "id": "b3fedba704042156",
+        "type": "change",
+        "z": "dff6ddc522d802cf",
+        "name": "soc_setpoint -> payload",
+        "rules": [
+            {
+                "t": "move",
+                "p": "payload.schedule.soc_setpoint",
+                "pt": "msg",
+                "to": "payload",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "topic",
+                "pt": "msg",
+                "to": "soc_setpoint",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1410,
+        "y": 480,
+        "wires": [
+            [
+                "aefc572eafcad5de",
+                "7d0959dda192366e"
+            ]
+        ]
+    },
+    {
+        "id": "9ac03198c45c3f30",
+        "type": "debug",
+        "z": "dff6ddc522d802cf",
+        "name": "output_#2_Victron2",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1390,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "d3845b6025fc4f09",
+        "type": "debug",
+        "z": "dff6ddc522d802cf",
+        "name": "debug 2570",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1690,
+        "y": 520,
+        "wires": []
+    },
+    {
+        "id": "e0f878e7a790c9d0",
+        "type": "debug",
+        "z": "dff6ddc522d802cf",
+        "name": "debug 2571",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1690,
+        "y": 560,
+        "wires": []
+    },
+    {
+        "id": "7d0959dda192366e",
+        "type": "debug",
+        "z": "dff6ddc522d802cf",
+        "name": "debug 2572",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1690,
+        "y": 600,
+        "wires": []
+    },
+    {
+        "id": "36534e6dddc06245",
+        "type": "http request",
+        "z": "dff6ddc522d802cf",
+        "name": "Get OTE JSON",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "body",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 760,
+        "y": 300,
+        "wires": [
+            [
+                "cf76cc020c1286db",
+                "0fbfc0c7b86b5769"
+            ]
+        ]
+    },
+    {
+        "id": "1fe9e445621e0059",
+        "type": "function",
+        "z": "dff6ddc522d802cf",
+        "name": "Tesla Controller v1.1.0",
+        "func": "/**\n * Tesla Charging Controller\n * v1.1\n *\n * INPUT:\n *  - msg.topic === \"price.windows\"\n *\n * FLOW CONTEXT:\n *  - tesla_window_mode: \"primary\" | \"secondary\"\n *\n * OUTPUTS:\n *  [0] tesla.schedule\n *  [1] tesla.status\n * \n * Optional Enhancements (v1.1+)\n * - SOC-aware window shortening\n * - Skip if already charging\n * - Prevent double-charge (primary + secondary same day) --DONE v1.1.0\n * - Grid-status gating\n * - Vehicle-present detection\n */\n\nconst VERSION = '1.1';\n\n// ------------------------------\n// Guard: correct input\n// ------------------------------\nif (msg.topic !== 'price.windows') {\n  return [null, null];\n}\n\nconst windows = msg.payload?.windows;\nif (!windows?.primary) {\n  return [\n    null,\n    {\n      topic: 'tesla.status',\n      payload: {\n        ok: false,\n        version: VERSION,\n        reason: 'NO_PRIMARY_WINDOW',\n        source: msg.payload?.source,\n        delivery_day: msg.payload?.delivery_day\n      }\n    }\n  ];\n}\n\n// ------------------------------\n// Window selection\n// ------------------------------\nconst mode = flow.get('tesla_window_mode') ?? 'primary';\n\nlet win = windows.primary;\nlet usedMode = 'primary';\n\nif (mode === 'secondary') {\n  if (windows.secondary) {\n    win = windows.secondary;\n    usedMode = 'secondary';\n  } else {\n    usedMode = 'primary_fallback';\n  }\n}\n\n// ------------------------------\n// Helpers\n// ------------------------------\nfunction toLocalIso(date) {\n  const tz = -date.getTimezoneOffset();\n  const s = tz >= 0 ? '+' : '-';\n  const p = n => String(Math.abs(n)).padStart(2, '0');\n  return date.toISOString().replace('Z', `${s}${p(tz/60)}:${p(tz%60)}`);\n}\n\nconst desiredSoc = Number(flow.get('desired_soc') ?? 80);\n\n// ------------------------------\n// Build schedule times\n// ------------------------------\nconst d = new Date();\nconst start = new Date(d.getFullYear(), d.getMonth(), d.getDate(), win.start);\nconst end   = new Date(d.getFullYear(), d.getMonth(), d.getDate(), win.end);\n\n// ------------------------------\n// OUTPUT #1 — Tesla schedule\n// ------------------------------\nconst scheduleMsg = {\n  topic: 'tesla.schedule',\n  payload: {\n    controller_version: VERSION,\n    window_mode: usedMode,\n    command_now: {\n      type: 'set_charge_limit',\n      charge_limit_percent: desiredSoc\n    },\n    schedule: {\n      start_time_iso: toLocalIso(start),\n      end_time_iso: toLocalIso(end)\n    }\n  }\n};\n\n// ------------------------------\n// OUTPUT #2 — Tesla status\n// ------------------------------\nconst statusMsg = {\n  topic: 'tesla.status',\n  payload: {\n    ok: true,\n    version: VERSION,\n    window_mode: usedMode,\n    source: msg.payload.source,\n    delivery_day: msg.payload.delivery_day,\n    selected_window: {\n      start: win.start,\n      end: win.end,\n      duration_h: win.end - win.start,\n      avg_price_eur_mwh: win.avg_price_eur_mwh\n    }\n  }\n};\n\n// ------------------------------\nreturn [\n  scheduleMsg,\n  statusMsg\n];",
+        "outputs": 2,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1400,
+        "y": 580,
+        "wires": [
+            [],
+            [
+                "d0512cde2e9318e8"
+            ]
+        ]
+    },
+    {
+        "id": "d0512cde2e9318e8",
+        "type": "ui_template",
+        "z": "dff6ddc522d802cf",
+        "group": "54be3934d8273ff3",
+        "name": "Tesla Controller Status",
+        "order": 2,
+        "width": 6,
+        "height": 6,
+        "format": "<div\n  ng-if=\"msg.topic === 'tesla.status'\"\n  style=\"\n    font-family: sans-serif;\n    padding: 10px;\n    border-left: 6px solid;\n    margin-bottom: 10px;\n  \"\n  ng-style=\"{\n    'border-color': msg.payload.ok ? '#3498db' : '#e74c3c'\n  }\"\n>\n\n  <h3 style=\"margin-top: 0;\">\n    Tesla Charging Controller\n    <span style=\"font-size: 0.8em; color: #666;\">\n      v{{msg.payload.version}}\n    </span>\n  </h3>\n\n  <p>\n    <strong>Status:</strong>\n    <span ng-if=\"msg.payload.ok\" style=\"color:#3498db;\">READY</span>\n    <span ng-if=\"!msg.payload.ok\" style=\"color:#e74c3c;\">ERROR</span>\n  </p>\n\n  <p ng-if=\"!msg.payload.ok\">\n    <strong>Reason:</strong>\n    {{msg.payload.reason}}\n  </p>\n\n  <p>\n    <strong>Source:</strong>\n    {{msg.payload.source}}\n  </p>\n\n  <p>\n    <strong>Delivery day:</strong>\n    {{msg.payload.delivery_day}}\n  </p>\n\n  <hr>\n\n  <h4>Selected charging window</h4>\n\n  <table style=\"border-collapse: collapse;\">\n    <tr>\n      <td style=\"padding: 4px 10px;\"><strong>Mode</strong></td>\n      <td style=\"text-transform: capitalize;\">\n        {{msg.payload.window_mode.replace('_',' ')}}\n      </td>\n    </tr>\n\n    <tr ng-if=\"msg.payload.selected_window\">\n      <td style=\"padding: 4px 10px;\"><strong>Start</strong></td>\n      <td>{{msg.payload.selected_window.start}}:00</td>\n    </tr>\n\n    <tr ng-if=\"msg.payload.selected_window\">\n      <td style=\"padding: 4px 10px;\"><strong>End</strong></td>\n      <td>{{msg.payload.selected_window.end}}:00</td>\n    </tr>\n\n    <tr ng-if=\"msg.payload.selected_window\">\n      <td style=\"padding: 4px 10px;\"><strong>Duration</strong></td>\n      <td>{{msg.payload.selected_window.duration_h}} h</td>\n    </tr>\n\n    <tr ng-if=\"msg.payload.selected_window\">\n      <td style=\"padding: 4px 10px;\"><strong>Avg price</strong></td>\n      <td>\n        {{msg.payload.selected_window.avg_price_eur_mwh}}\n        EUR/MWh\n      </td>\n    </tr>\n  </table>\n\n</div>",
+        "storeOutMessages": false,
+        "fwdInMessages": false,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 1720,
+        "y": 640,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "39b1c67e39f79684",
+        "type": "http request",
+        "z": "dff6ddc522d802cf",
+        "name": "Get ECB xml",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 430,
+        "y": 780,
+        "wires": [
+            [
+                "f3d4569c9742af56",
+                "974804d7208f909d"
+            ]
+        ]
+    },
+    {
+        "id": "4ba147ab9f806de2",
+        "type": "function",
+        "z": "dff6ddc522d802cf",
+        "d": true,
+        "g": "7b9cd6edacba6294",
+        "name": "ECB FX parser v1.0",
+        "func": "/**\n * ECB EUR/CZK FX parser (Node-RED XML safe)\n * - Handles namespaces\n * - Caches value in flow context\n */\n\nconst rootKey = Object.keys(msg.payload || {})[0];\nif (!rootKey) {\n  node.warn('ECB_FX_NO_ROOT');\n  return null;\n}\n\nconst envelope = msg.payload[rootKey];\n\n// Navigate: Envelope → Cube → Cube(time) → Cube(currency)\nconst cubesLevel1 = envelope.Cube?.[0]?.Cube?.[0]?.Cube;\nif (!Array.isArray(cubesLevel1)) {\n  node.warn('ECB_FX_INVALID_XML');\n  return null;\n}\n\nconst czk = cubesLevel1.find(c => c.$?.currency === 'CZK');\nif (!czk) {\n  node.warn('ECB_FX_CZK_NOT_FOUND');\n  return null;\n}\n\nconst rate = Number(czk.$.rate);\nif (!Number.isFinite(rate)) {\n  node.warn('ECB_FX_INVALID_RATE');\n  return null;\n}\n\nflow.set('fx', {\n  czk_per_eur: rate,\n  date: envelope.Cube?.[0]?.Cube?.[0]?.$?.time,\n  source: 'ECB'\n});\n\nnode.status({\n  fill: 'green',\n  shape: 'dot',\n  text: `EUR/CZK ${rate}`\n});\n\nreturn null;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 790,
+        "y": 1100,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "7d6c385caf385db5",
+        "type": "inject",
+        "z": "dff6ddc522d802cf",
+        "d": true,
+        "name": "Daily 22:55 ENTSO-E fetch",
+        "props": [],
+        "repeat": "",
+        "crontab": "55 22 * * *",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 180,
+        "y": 180,
+        "wires": [
+            [
+                "e1eedb84618b3c65"
+            ]
+        ]
+    },
+    {
+        "id": "fdbd1b51c6d935a8",
+        "type": "debug",
+        "z": "dff6ddc522d802cf",
+        "name": "http_Req_Node__DEBUG",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1010,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "f958aeef9671f202",
+        "type": "debug",
+        "z": "dff6ddc522d802cf",
+        "name": "http_ParseXML__DEBUG",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1010,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "0edeed0c93d97654",
+        "type": "function",
+        "z": "dff6ddc522d802cf",
+        "d": true,
+        "g": "7b9cd6edacba6294",
+        "name": "CZ Spot Price Controller v2.6.0",
+        "func": "/**\n * CZ Spot Price Controller\n * v2.6.0\n *\n * MAJOR:\n * - Device-agnostic price intelligence\n * - Primary + secondary charging windows\n * - price.windows canonical output\n * - Tesla logic fully removed\n */\n\n// ======================================================\n// VERSION\n// ======================================================\nconst VERSION = '2.6.0';\n\n// ======================================================\n// DEBUG\n// ======================================================\nconst DEBUG = flow.get('debug_controller') === true;\n\nfunction debug(msg) {\n  if (!DEBUG) return null;\n  return { topic: 'DEBUG', payload: msg };\n}\n\n// ======================================================\n// CONFIG\n// ======================================================\nconst CFG = {\n  source: flow.get('price_data_source') ?? 'ENTSOE_A44',\n  windowHours: Number(flow.get('window_hours') ?? 2),\n  desiredSoc: Number(flow.get('desired_soc') ?? 70),\n  maxAvgPrice: Number(flow.get('max_avg_price_eur_mwh') ?? 150)\n};\n\n// ======================================================\n// SOURCE VALIDATION\n// ======================================================\nif (CFG.source === 'OTE_CHART') {\n  if (!msg.payload?.data?.dataLine) throw 'PAYLOAD_SOURCE_MISMATCH_OTE';\n  if (Array.isArray(msg.payload.data.dataLine) &&\n      msg.payload.data.dataLine.length === 0)\n    throw 'OTE_EMPTY_DATASET';\n}\n\nif (CFG.source === 'ENTSOE_A44' && !msg.payload?.TimeSeries)\n  throw 'PAYLOAD_SOURCE_MISMATCH_ENTSOE';\n\nif (msg.price_source !== CFG.source)\n  throw `SOURCE_SWITCH_MISMATCH ${msg.price_source} → ${CFG.source}`;\n\n// ======================================================\n// TIME HELPERS\n// ======================================================\nfunction toLocalIso(date) {\n  const tz = -date.getTimezoneOffset();\n  const s = tz >= 0 ? '+' : '-';\n  const p = n => String(Math.abs(n)).padStart(2, '0');\n  return date.toISOString().replace('Z', `${s}${p(tz/60)}:${p(tz%60)}`);\n}\n\n// ======================================================\n// FALLBACK (Victron only)\n// ======================================================\nfunction buildFallback(reason) {\n  const h = Number(flow.get('fallback_start_hour') ?? 1);\n  const w = Number(flow.get('fallback_window_hours') ?? 2);\n  const soc = Number(flow.get('fallback_soc') ?? 80);\n\n  return [\n    {\n      topic: 'victron.schedule',\n      payload: {\n        action: 'set_scheduler',\n        schedule: {\n          index: 0,\n          enabled: true,\n          day: 7,\n          start_minute: h * 60,\n          duration_minute: w * 60,\n          soc_setpoint: soc,\n          note: 'FALLBACK'\n        }\n      }\n    },\n    null,\n    null,\n    {\n      topic: 'controller.status',\n      payload: { ok: false, fallback: true, reason, version: VERSION }\n    },\n    null,\n    null,\n    debug({ fallback: true, reason })\n  ];\n}\n\n// ======================================================\n// PARSERS\n// ======================================================\nfunction parseEntsoeA44(doc) {\n  const root = doc?.[Object.keys(doc)[0]];\n  const pts = root?.TimeSeries?.[0]?.Period?.[0]?.Point;\n  if (!Array.isArray(pts)) throw 'A44_NO_POINTS';\n\n  return pts.map(p => ({\n    hour: Number(p.position[0]) - 1,\n    price: Number(p['price.amount'][0])\n  }));\n}\n\nfunction parseOteChart(doc) {\n  const lines = doc?.data?.dataLine;\n  if (!Array.isArray(lines)) throw 'OTE_NO_DATALINE';\n\n  const line = lines.find(l =>\n    l.title === '60min price reference (EUR/MWh)'\n  );\n  if (!line?.point || line.point.length !== 96)\n    throw 'OTE_INVALID_POINTS';\n\n  const out = [];\n  for (let h = 0; h < 24; h++) {\n    const p = Number(line.point[h * 4].y);\n    if (!Number.isFinite(p)) throw 'OTE_PRICE_INVALID';\n    out.push({ hour: h, price: p });\n  }\n  return out;\n}\n\n// ======================================================\n// WINDOW FINDER\n// ======================================================\nfunction findCheapestWindowInRange(hourly, startMin, startMax) {\n  let best = null;\n  for (let s = startMin; s <= startMax; s++) {\n    const e = s + CFG.windowHours;\n    if (e > 24) continue;\n\n    const slice = hourly.filter(h => h.hour >= s && h.hour < e);\n    if (slice.length !== CFG.windowHours) continue;\n\n    const avg = slice.reduce((a,b)=>a+b.price,0) / slice.length;\n    const max = Math.max(...slice.map(h=>h.price));\n\n    if (!best || avg < best.avg)\n      best = { start:s, end:e, avg, max };\n  }\n  return best;\n}\n\n// ======================================================\n// CACHE\n// ======================================================\nconst CACHE_VERSION = 'v2_6_0';\nconst sig = CFG.source === 'OTE_CHART' ? 'ote' : 'entsoe';\nconst cacheKey = `prices_${sig}_${msg.delivery_day}_${CACHE_VERSION}`;\n\nlet hourly = flow.get(cacheKey);\nif (!hourly) {\n  try {\n    hourly = CFG.source === 'OTE_CHART'\n      ? parseOteChart(msg.payload)\n      : parseEntsoeA44(msg.payload);\n    flow.set(cacheKey, hourly);\n  } catch (e) {\n    return buildFallback(e);\n  }\n}\n\n// ======================================================\n// MAIN LOGIC\n// ======================================================\nconst winPrimary = findCheapestWindowInRange(hourly, 0, 23 - CFG.windowHours);\nconst winSecondary = findCheapestWindowInRange(hourly, 10, 17);\n\nif (!winPrimary) return buildFallback('NO_PRIMARY_WINDOW');\nif (winPrimary.avg > CFG.maxAvgPrice)\n  return buildFallback('PRICE_TOO_HIGH');\n\n// ======================================================\n// OUTPUTS\n// ======================================================\nconst victron1 = {\n  topic:'victron.schedule',\n  payload:{ action:'set_scheduler', schedule:{\n    index: 0,\n    enabled:true,\n    day:7,\n    start_minute: winPrimary.start * 60,\n    duration_minute: CFG.windowHours * 60,\n    soc_setpoint: CFG.desiredSoc\n  }}\n};\n\nconst victron2 = winSecondary ? {\n  topic:'victron.schedule',\n  payload:{ action:'set_scheduler', schedule:{\n    index: 1,\n    enabled:true,\n    day:7,\n    start_minute: winSecondary.start * 60,\n    duration_minute: CFG.windowHours * 60,\n    soc_setpoint: CFG.desiredSoc\n  }}\n} : null;\n\nconst priceWindows = {\n  topic:'price.windows',\n  payload:{\n    version: VERSION,\n    source: CFG.source,\n    delivery_day: msg.delivery_day,\n    windows:{\n      primary:{\n        start: winPrimary.start,\n        end: winPrimary.end,\n        avg: +winPrimary.avg.toFixed(2),\n        max: +winPrimary.max.toFixed(2)\n      },\n      secondary: winSecondary && {\n        start: winSecondary.start,\n        end: winSecondary.end,\n        avg: +winSecondary.avg.toFixed(2),\n        max: +winSecondary.max.toFixed(2)\n      }\n    }\n  }\n};\n\nconst status = {\n  topic:'controller.status',\n  payload:{\n    ok:true,\n    version:VERSION,\n    source:CFG.source,\n    delivery_day:msg.delivery_day,\n    selected:{\n      start_hour: winPrimary.start,\n      end_hour: winPrimary.end,\n      avg_price_eur_mwh: +winPrimary.avg.toFixed(2),\n      max_price_eur_mwh: +winPrimary.max.toFixed(2)\n    }\n  }\n};\n\nconst chartMsgs = [];\nconst [y,m,d] = msg.delivery_day.split('-').map(Number);\nconst base = new Date(y,m-1,d).getTime();\n\nhourly.forEach(h => {\n  const ts = base + h.hour * 3600000;\n  chartMsgs.push({ topic:'EUR/MWh', payload:h.price, timestamp:ts });\n  chartMsgs.push({\n    topic:'Primary window',\n    payload: h.hour>=winPrimary.start && h.hour<winPrimary.end ? h.price : null,\n    timestamp:ts\n  });\n  chartMsgs.push({\n    topic:'Secondary window',\n    payload: winSecondary &&\n      h.hour>=winSecondary.start && h.hour<winSecondary.end\n        ? h.price : null,\n    timestamp:ts\n  });\n});\n\nreturn [\n  victron1,\n  victron2,\n  priceWindows,\n  status,\n  chartMsgs,\n  null,\n  debug({\n    version:VERSION,\n    primary: winPrimary,\n    secondary: winSecondary\n  })\n];",
+        "outputs": 7,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1030,
+        "y": 1140,
+        "wires": [
+            [],
+            [],
+            [],
+            [],
+            [],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "a92d657632e52af8",
+        "type": "ui_slider",
+        "z": "dff6ddc522d802cf",
+        "name": "Secondary Window Hours",
+        "label": "Secondary window",
+        "tooltip": "Secondary charging window (hours)",
+        "group": "c1b011b476bc3539",
+        "order": 2,
+        "width": 6,
+        "height": 1,
+        "passthru": true,
+        "outs": "end",
+        "topic": "",
+        "topicType": "str",
+        "min": 1,
+        "max": "4",
+        "step": 1,
+        "className": "",
+        "x": 180,
+        "y": 680,
+        "wires": [
+            [
+                "9179de6a4846c8a7"
+            ]
+        ]
+    },
+    {
+        "id": "9179de6a4846c8a7",
+        "type": "function",
+        "z": "dff6ddc522d802cf",
+        "name": "Save SecondaryWindow to flow",
+        "func": "// Save secondary window hours\nflow.set('window_hours_secondary', Number(msg.payload));\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 490,
+        "y": 680,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "0d5758d6a78062f3",
+        "type": "function",
+        "z": "dff6ddc522d802cf",
+        "d": true,
+        "g": "7b9cd6edacba6294",
+        "name": "Tesla Controller v1.0.0",
+        "func": "/**\n * Tesla Charging Controller\n * v1.0.0\n *\n * INPUT:\n *   topic: price.windows\n *\n * OUTPUT 1:\n *   tesla.schedule\n *\n * OUTPUT 2:\n *   tesla.status\n * \n * Optional Enhancements (v1.1+)\n * - SOC-aware window shortening\n * - Skip if already charging\n * - Prevent double-charge (primary + secondary same day)\n * - Grid-status gating\n * - Vehicle-present detection\n */\n\n// ======================================================\n// VERSION\n// ======================================================\nconst VERSION = '1.0.0';\n\n// ======================================================\n// DEBUG\n// ======================================================\nconst DEBUG = flow.get('debug_tesla') === true;\n\nfunction debug(msg) {\n  if (!DEBUG) return null;\n  return { topic: 'DEBUG_TESLA', payload: msg };\n}\n\n// ======================================================\n// INPUT VALIDATION\n// ======================================================\nif (msg.topic !== 'price.windows') {\n  return null;\n}\n\nconst pw = msg.payload;\n\nif (!pw?.windows?.primary) {\n  return [\n    null,\n    {\n      topic: 'tesla.status',\n      payload: {\n        ok: false,\n        reason: 'NO_PRIMARY_WINDOW',\n        version: VERSION\n      }\n    }\n  ];\n}\n\n// ======================================================\n// CONFIG\n// ======================================================\nconst CFG = {\n  desiredSoc: Number(flow.get('tesla_desired_soc') ?? 80),\n  preferSecondary: flow.get('tesla_prefer_secondary') === true\n};\n\n// ======================================================\n// WINDOW SELECTION\n// ======================================================\nconst win =\n  CFG.preferSecondary && pw.windows.secondary\n    ? pw.windows.secondary\n    : pw.windows.primary;\n\n// ======================================================\n// TIME CALCULATION\n// ======================================================\nconst [yyyy, mm, dd] = pw.delivery_day.split('-').map(Number);\n\nconst start = new Date(yyyy, mm - 1, dd, win.start, 0, 0);\nconst end   = new Date(yyyy, mm - 1, dd, win.end,   0, 0);\n\n// ======================================================\n// TESLA COMMAND\n// ======================================================\nconst teslaScheduleMsg = {\n  topic: 'tesla.schedule',\n  payload: {\n    command_now: {\n      type: 'set_charge_limit',\n      charge_limit_percent: CFG.desiredSoc\n    },\n    schedule: {\n      start_time_iso: start.toISOString(),\n      end_time_iso: end.toISOString()\n    }\n  }\n};\n\n// ======================================================\n// STATUS\n// ======================================================\nconst statusMsg = {\n  topic: 'tesla.status',\n  payload: {\n    ok: true,\n    version: VERSION,\n    delivery_day: pw.delivery_day,\n    selected_window: CFG.preferSecondary && pw.windows.secondary\n      ? 'secondary'\n      : 'primary',\n    start_hour: win.start,\n    end_hour: win.end,\n    target_soc: CFG.desiredSoc\n  }\n};\n\n// ======================================================\n// OUTPUTS\n// ======================================================\nreturn [\n  teslaScheduleMsg,\n  statusMsg,\n  debug({\n    input: pw,\n    selected_window: win\n  })\n];",
+        "outputs": 2,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1400,
+        "y": 1100,
+        "wires": [
+            [],
+            []
+        ]
+    },
+    {
+        "id": "f9bb5d33533abe28",
+        "type": "ui_switch",
+        "z": "dff6ddc522d802cf",
+        "name": "",
+        "label": "Tesla charging window",
+        "tooltip": "OFF:primary / ON:secondary",
+        "group": "c1b011b476bc3539",
+        "order": 7,
+        "width": 0,
+        "height": 0,
+        "passthru": true,
+        "decouple": "false",
+        "topic": "topic",
+        "topicType": "msg",
+        "style": "",
+        "onvalue": "secondary",
+        "onvalueType": "str",
+        "onicon": "",
+        "oncolor": "",
+        "offvalue": "primary",
+        "offvalueType": "str",
+        "officon": "",
+        "offcolor": "",
+        "animate": false,
+        "className": "",
+        "x": 200,
+        "y": 720,
+        "wires": [
+            [
+                "630dd75acd7339a3"
+            ]
+        ]
+    },
+    {
+        "id": "630dd75acd7339a3",
+        "type": "function",
+        "z": "dff6ddc522d802cf",
+        "name": "Save Tesla window preference",
+        "func": "// Save Tesla window preference\nflow.set('tesla_window_mode', msg.payload); // \"primary\" | \"secondary\"\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 490,
+        "y": 720,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "bcdd500cbce9b4c9",
+        "type": "function",
+        "z": "dff6ddc522d802cf",
+        "name": "CSV header",
+        "func": "// CSV header once per delivery day (Node-RED safe)\n\nconst day = msg.delivery_day;\nconst flagKey = `csv_header_written_${day}`;\n\nif (!flow.get(flagKey)) {\n  msg.payload =\n    'delivery_day,hour,price_eur_mwh,in_selected_window\\n' +\n    msg.payload;\n\n  flow.set(flagKey, true);\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1690,
+        "y": 800,
+        "wires": [
+            [
+                "a8dbb982c65420d9"
+            ]
+        ]
+    },
+    {
+        "id": "a8dbb982c65420d9",
+        "type": "file",
+        "z": "dff6ddc522d802cf",
+        "name": "/data/home/nodered/.../audit/",
+        "filename": "/data/home/nodered/.node-red/context/audit/entsoe_a44_{{delivery_day}}.csv",
+        "filenameType": "str",
+        "appendNewline": false,
+        "createDir": true,
+        "overwriteFile": "false",
+        "encoding": "utf8",
+        "x": 1750,
+        "y": 840,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "e29857746560a5f7",
+        "type": "file in",
+        "z": "dff6ddc522d802cf",
+        "name": "",
+        "filename": "",
+        "filenameType": "str",
+        "format": "utf8",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "none",
+        "allProps": false,
+        "x": 1680,
+        "y": 940,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "c8af633c7e85cd29",
+        "type": "fs-file-lister",
+        "z": "dff6ddc522d802cf",
+        "name": "Lister: entsoe Audit Files",
+        "start": "/data/home/nodered/.node-red/context/audit/",
+        "pattern": "*.*",
+        "folders": "*",
+        "hidden": true,
+        "lstype": "files",
+        "path": false,
+        "single": false,
+        "depth": "0",
+        "stat": true,
+        "showWarnings": true,
+        "x": 1730,
+        "y": 880,
+        "wires": [
+            [
+                "a711dfd349f21b95"
+            ]
+        ]
+    },
+    {
+        "id": "a711dfd349f21b95",
+        "type": "debug",
+        "z": "dff6ddc522d802cf",
+        "name": "debug 2556 Audit Files",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1990,
+        "y": 880,
+        "wires": []
+    },
+    {
+        "id": "91f814bb0b462583",
+        "type": "inject",
+        "z": "dff6ddc522d802cf",
+        "name": "Run controller",
+        "props": [],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "x": 1530,
+        "y": 880,
+        "wires": [
+            [
+                "c8af633c7e85cd29"
+            ]
+        ]
+    },
+    {
+        "id": "c1b011b476bc3539",
+        "type": "ui_group",
+        "name": "Charging Control 2.6",
+        "tab": "0144a72126104450",
+        "order": 1,
+        "disp": true,
+        "width": "6",
+        "collapse": true,
+        "className": ""
+    },
+    {
+        "id": "f361919ab48c7d95",
+        "type": "ui_group",
+        "name": "Charging Status 2.6",
+        "tab": "0144a72126104450",
+        "order": 2,
+        "disp": true,
+        "width": 6,
+        "collapse": true,
+        "className": ""
+    },
+    {
+        "id": "54be3934d8273ff3",
+        "type": "ui_group",
+        "name": "Tesla Status 2.6",
+        "tab": "0144a72126104450",
+        "order": 3,
+        "disp": true,
+        "width": "6",
+        "collapse": true,
+        "className": ""
+    },
+    {
+        "id": "0144a72126104450",
+        "type": "ui_tab",
+        "name": "Smart Charging 2.6",
+        "icon": "dashboard",
+        "order": 8,
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "5911546dd324b90b",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-dashboard": "3.6.6",
+            "@victronenergy/node-red-contrib-victron": "1.6.60",
+            "node-red-contrib-fs": "1.4.1"
+        }
+    }
+]
